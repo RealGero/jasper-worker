@@ -1,6 +1,7 @@
+#!/usr/bin/env python3
+
 # from selenium import webdriver
 from seleniumwire import webdriver
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -9,12 +10,10 @@ from selenium.webdriver.common.keys import Keys
 import random
 import pandas as pd
 import datetime
-import sys
 import os
 import os.path
 import time
 import csv
-import re
 import creds
 import glob
 
@@ -24,14 +23,6 @@ def user_agent():
         for agents in f:
             user_agent_list.append(agents)
     return user_agent_list
-
-def convert_row( row ):
-    row_dict = {}
-    for key, value in row.items():
-        keyAscii = key.encode('ascii', 'ignore' ).decode()
-        valueAscii = value.encode('ascii','ignore').decode()
-        row_dict[ keyAscii ] = valueAscii
-    return row_dict
 
 def work_jasper():
     time_start = datetime.datetime.now().replace(microsecond=0)
@@ -60,8 +51,8 @@ def work_jasper():
 
     composed_list = []
     prompt_list = []
+    city_list =[]
     url_list = []
-    city_list = []
 
     browser.get('https://app.jasper.ai/')
     uname = browser.find_element(By.ID, "email")
@@ -81,96 +72,67 @@ def work_jasper():
     time.sleep(10)
 
     signincode = browser.find_element(By.ID, "signInCode")
-    time.sleep(20)
+    time.sleep(10)
     signincode.submit()
-    time.sleep(20)
+    time.sleep(15)
 
-    try:
-        
-        WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[1]/div/nav[1]/ul[2]/li'))).click()
-        time.sleep(1)
+    # WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[1]/div/nav[1]/ul[2]/li/a'))).click()
+    template_click = browser.find_element(By.XPATH, '//*[@id="__next"]/div[1]/div/nav[1]/ul/li[2]/a')
+    template_click.click()
+    time.sleep(5)
+    WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="template-card"][12]'))).click()
+    time.sleep(5)
 
-        WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, '/html/body/div[1]/div[1]/div[3]/article/div/div/div/div[2]/div[2]/div[1]'))).click()
-        time.sleep(1)
+    # change the input from 3 to 1
+    change_input = WebDriverWait(browser, 5).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[1]/div[3]/div/div[1]/form/div[3]/div/div/input')))
+    change_input.clear()
+    time.sleep(2)
+    change_input.send_keys(1)
 
-        WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[1]/div[3]/article/div/div[2]/button'))).click()
-        time.sleep(5)
-
-        WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div[1]/div[1]/div/div[1]/div[4]/div/div/div/div[1]/div[2]/div[2]/button[3]'))).click()
-        time.sleep(5)
-
-    except:
-
-        WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div[1]/div[1]/div/div[2]/div[2]/div/div[1]/button[2]'))).click()
-        time.sleep(1)
-
-        WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="list"]/div[2]/button[1]'))).click()
-        # Use for Google VM instance
-        # WebDriverWait(browser, 5).until(EC.presence_of_element_located((By.XPATH, '//*[@id="list"]/div[1]/button'))).click()
-        time.sleep(1)
-        
-        WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div[1]/div[1]/div/div[5]/div/div/div/div/ul/li[1]/div'))).click()
-        time.sleep(5)
-
-        WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div[1]/div[1]/div/div[1]/div[4]/div/div/div/div[1]/div[2]/div[2]/button[3]'))).click()
-        time.sleep(3)
-
-    with open('query.csv', encoding='unicode_escape') as f:
+    with open('query.csv') as f:
         reader = csv.DictReader(f)
 
         for line in reader:
 
-            converted_row = convert_row( line )
-            prompt = converted_row['prompt']
-            url = converted_row['URL']
-            city = converted_row['City']
-
+            url = line['URL']
+            city = line['City']
+            prompt = line['prompt']
             try:
                 
+    
                 # input_editor = browser.find_element(By.CLASS_NAME, 'ql-editor')
-                input_editor = WebDriverWait(browser, 30).until(EC.presence_of_element_located((By.CLASS_NAME, 'ql-editor')))
+                #input command jasper
+                input_editor = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.ID, 'form-field-command')))
                 input_editor.clear()
-                time.sleep(6)
+                time.sleep(2)
                 input_editor.send_keys(prompt)
-                time.sleep(7)
-
-                # Perform a ENTER key press to generate a last child element
-                actions = ActionChains(browser)
-                # actions.send_keys(Keys.ENTER).key_up(Keys.ENTER).perform()
-
-                # last_child_command = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.CSS_SELECTOR, '.ql-editor>:last-child')))
-                # cursor_position = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.CSS_SELECTOR, '.ql-editor>:nth-last-child(3)')))
-                # source_element = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.CSS_SELECTOR, '.ql-editor>:nth-last-child(2)')))
-                # target_element = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.CSS_SELECTOR, '.ql-editor>:last-child')))
-
-                # Move the cursor to the last
-                # actions.move_to_element(cursor_position).perform()
-                # actions.move_by_offset(100, 0).perform()
+                time.sleep(2)
                 
-                # Highlight the command and perform
-                # actions.drag_and_drop(cursor_position, target_element).perform()
-                # time.sleep(5)
+                # click the generate button
             
-                # Execute the command
-                actions.key_down(Keys.CONTROL).send_keys(Keys.ENTER).key_up(Keys.CONTROL).perform()
-
+                WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="generateBtn1"]/div[1]'))).click()
+                time.sleep(7)
                 # compose = browser.find_element(By.XPATH, '//*[@id="app"]/div[1]/div[1]/div/div/div[5]/div/div[2]/div/div/button')
                 # compose.click()
-                time.sleep(13)
-
-                composed_prompt = browser.find_element(By.CLASS_NAME, 'ql-editor')
-                composed_list.append(composed_prompt.text if composed_prompt.text != '' else 'Unexpected error')
-                print(f'{composed_prompt.text}\n')
-                prompt_list.append(prompt if prompt != '' else 'Unexpected error')
-                url_list.append(url if url != '' else 'Unexpected error')
-                city_list.append(city if city != '' else 'Unexpected error')
+                # WAIT FOR PROMT DIV
+                # get the result/prompted text
+                # composed_prompt = browser.find_element((By.CLASS_NAME, 'w-full mt-2 mb-3'))
+                
+                composed_prompt_text = WebDriverWait(browser, 100).until(EC.presence_of_element_located((By.XPATH, '//div[@class="w-full mt-2 mb-3 text-base font-medium leading-7 text-gray-800 whitespace-pre-wrap pre"]')))
+                composed_prompt = composed_prompt_text.get_attribute("textContent")
+               
+                composed_list.append(composed_prompt)
+                print(f'{composed_prompt}\n')
+                prompt_list.append(prompt)
+                city_list.append(city)
+                url_list.append(url)
+                time.sleep(2)
+                # click the clear button to remove all the text in prompted input
+                click_clear = browser.find_element(By.XPATH,'//button[@class="relative transition-all duration-150 before:transition-all before:duration-150 before:absolute before:inset-0 px-3 py-2 text-xs font-medium leading-4 text-gray-400 hover:text-gray-600 before:bg-gray-100 before:rounded-lg before:scale-50 before:opacity-0 hover:before:scale-100 hover:before:opacity-100"]')
+                click_clear.click()
                 time.sleep(3)
-
+               
             except:
-                composed_list.append('Unexpected error')
-                prompt_list.append(prompt if prompt != '' else 'Unexpected error')
-                url_list.append(url if url != '' else 'Unexpected error')
-                city_list.append(city if city != '' else 'Unexpected error')
                 pass
 
     time_end = datetime.datetime.now().replace(microsecond=0)
@@ -180,17 +142,15 @@ def work_jasper():
     # Save scraped URLs to a CSV file
     now = datetime.datetime.now().strftime('%Y%m%d-%Hh%M')
     print('Saving to a CSV file...\n')
-    print(f'URL: {len(url_list)}, City: {len(city_list)}, Prompt: {len(prompt_list)}, Composed: {len(composed_list)}\n')
-    data = {"URL": url_list, "City": city_list, "Prompt": prompt_list,"Composed": composed_list}
-    df = pd.DataFrame.from_dict(data, orient='index')
-    # df.index+=1
-    df = df.transpose()
+    data = { "Url":url_list, "City":city_list, "Prompt": prompt_list,"Composed": composed_list}
+    df = pd.DataFrame(data=data)
+    df.index += 1
 
     filename = f"jasper_composed{ now }.csv"
 
     print(f'{filename} saved sucessfully.\n')
 
-    file_path = os.path.join(directory,'csvfiles/', filename)
+    file_path = os.path.join(directory, 'csvfiles/', filename)
     df.to_csv(file_path)
 
     browser.quit()
