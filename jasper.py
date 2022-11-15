@@ -74,7 +74,7 @@ def work_jasper():
     signincode = browser.find_element(By.ID, "signInCode")
     time.sleep(10)
     signincode.submit()
-    time.sleep(15)
+    time.sleep(20)
 
     # WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[1]/div/nav[1]/ul[2]/li/a'))).click()
     template_click = browser.find_element(By.XPATH, '//*[@id="__next"]/div[1]/div/nav[1]/ul/li[2]/a')
