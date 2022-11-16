@@ -79,12 +79,12 @@ def work_jasper():
     # WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[1]/div/nav[1]/ul[2]/li/a'))).click()
     template_click = browser.find_element(By.XPATH, '//*[@id="__next"]/div[1]/div/nav[1]/ul/li[2]/a')
     template_click.click()
-    time.sleep(5)
-    WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="template-card"][12]'))).click()
-    time.sleep(5)
+    time.sleep(7)
+    WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, '//*[@id="template-card"][12]'))).click()
+    time.sleep(7)
 
     # change the input from 3 to 1
-    change_input = WebDriverWait(browser, 5).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[1]/div[3]/div/div[1]/form/div[3]/div/div/input')))
+    change_input = WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div[1]/div[3]/div/div[1]/form/div[3]/div/div/input')))
     change_input.clear()
     time.sleep(2)
     change_input.send_keys(1)
