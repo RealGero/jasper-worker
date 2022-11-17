@@ -24,6 +24,14 @@ def user_agent():
             user_agent_list.append(agents)
     return user_agent_list
 
+def convert_row( row ):
+    row_dict = {}
+    for key, value in row.items():
+        keyAscii = key.encode('ascii', 'ignore' ).decode()
+        valueAscii = value.encode('ascii','ignore').decode()
+        row_dict[ keyAscii ] = valueAscii
+    return row_dict
+
 def work_jasper():
     time_start = datetime.datetime.now().replace(microsecond=0)
     directory = os.path.dirname(os.path.realpath(__file__))
@@ -72,7 +80,7 @@ def work_jasper():
     time.sleep(10)
 
     signincode = browser.find_element(By.ID, "signInCode")
-    time.sleep(10)
+    time.sleep(20)
     signincode.submit()
     time.sleep(20)
 
@@ -94,9 +102,10 @@ def work_jasper():
 
         for line in reader:
 
-            url = line['URL']
-            city = line['City']
-            prompt = line['prompt']
+            converted_row = convert_row(line)
+            url = converted_row['URL']
+            city = converted_row['City']
+            prompt = converted_row['prompt']
             try:
                 
     
@@ -133,6 +142,10 @@ def work_jasper():
                 time.sleep(3)
                
             except:
+                composed_list.append('Unexpected error')
+                prompt_list.append(prompt if prompt != '' else 'Unexpected error')
+                url_list.append(url if url != '' else 'Unexpected error')
+                city_list.append(city if city != '' else 'Unexpected error')
                 pass
 
     time_end = datetime.datetime.now().replace(microsecond=0)
@@ -143,8 +156,8 @@ def work_jasper():
     now = datetime.datetime.now().strftime('%Y%m%d-%Hh%M')
     print('Saving to a CSV file...\n')
     data = { "Url":url_list, "City":city_list, "Prompt": prompt_list,"Composed": composed_list}
-    df = pd.DataFrame(data=data)
-    df.index += 1
+    df = pd.DataFrame.from_dict(data, orient='index')
+    df = df.transpose()
 
     filename = f"jasper_composed{ now }.csv"
 
