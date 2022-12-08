@@ -88,7 +88,7 @@ def work_jasper():
     template_click = browser.find_element(By.XPATH, '//*[@id="__next"]/div[1]/div/nav[1]/ul/li[2]/a')
     template_click.click()
     time.sleep(7)
-    WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, '//*[@id="template-card"][12]'))).click()
+    WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, '//*[@id="template-card"][13]'))).click()
     time.sleep(7)
 
     # change the input from 3 to 1
@@ -129,7 +129,7 @@ def work_jasper():
                 
                 composed_prompt_text = WebDriverWait(browser, 100).until(EC.presence_of_element_located((By.XPATH, '//div[@class="w-full mt-2 mb-3 text-base font-medium leading-7 text-gray-800 whitespace-pre-wrap pre"]')))
                 composed_prompt = composed_prompt_text.get_attribute("textContent")
-               
+
                 composed_list.append(composed_prompt)
                 print(f'{composed_prompt}\n')
                 prompt_list.append(prompt)
@@ -155,6 +155,7 @@ def work_jasper():
     # Save scraped URLs to a CSV file
     now = datetime.datetime.now().strftime('%Y%m%d-%Hh%M')
     print('Saving to a CSV file...\n')
+    print(f'URL: {len(url_list)}, City: {len(city_list)}, Prompt: {len(prompt_list)}, Composed: {len(composed_list)}\n')
     data = { "Url":url_list, "City":city_list, "Prompt": prompt_list,"Composed": composed_list}
     df = pd.DataFrame.from_dict(data, orient='index')
     df = df.transpose()
